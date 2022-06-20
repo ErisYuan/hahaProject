@@ -101,7 +101,7 @@ int MainWindow::readData()
 
     outputPtr->close();
     delete outputPtr;
-
+    qDebug() << "2333";
     for(int i = 0; i<=iter; ++i) {files[i]->close(); delete files[i];}
     for(int i = 0; i<100000; ++i) {
         if(records[i] != nullptr) delete records[i];
