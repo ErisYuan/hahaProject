@@ -24,5 +24,8 @@ int operator < (const DateType &a, const DateType &b) {
 }
 
 QString DateType::toQString() const {
-    return QString::number(year)+"-"+QString::number(month)+"-"+QString::number(day);
+    QString Month = QString::number(month); if(Month.length() == 1) Month = "0"+Month;
+    QString Day = QString::number(day); if(Day.length() == 1) Day = "0"+Day;
+
+    return QString::number(year)+"-"+Month+"-"+Day;
 }

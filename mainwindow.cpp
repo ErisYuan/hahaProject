@@ -24,14 +24,16 @@ int MainWindow::readData()
     if(!mainFilePtr->exists()) {QMessageBox::critical(this, "Error", "File not exist.") ;return -1;}
     mainFilePtr->open(QFile::OpenModeFlag::ReadOnly);
     int iter;
+    long long estimate = mainFilePtr->size() / 75;
+    qDebug() << estimate;
     //C:\Users\tiroxwater\Desktop\Project\stock_china.csv
-    QString headLine = mainFilePtr->readLine(); //移除第一行的
-    for(iter = 117; false; iter++) {
+    mainFilePtr->readLine(); //移除第一行的
+    for(iter = 0; ; iter++) {
         bool finished = false;
         int i;
         for(i=0;i<100000;i++) {
             QString lineData = mainFilePtr->readLine();
-            if(lineData == "") {
+            if(mainFilePtr->atEnd()) {
                 finished = true;
                 break;
             }
@@ -57,11 +59,13 @@ int MainWindow::readData()
         qDebug() << "Data Write: Success";
         out->close();
         delete out;
+        ui->progressBar->setValue(iter*100/estimate);
         if(finished) break;
     }
     mainFilePtr->close();
     delete mainFilePtr;
 
+    ui->progressBar->reset();
     typedef std::pair<StockRecord, int> Pair;
     std::priority_queue<Pair> Q;
     QFile *files[200] = {};
@@ -77,26 +81,34 @@ int MainWindow::readData()
 
     QFile *outputPtr = new QFile("..\\output.txt");
     outputPtr->open(QFile::OpenModeFlag::ReadWrite);
-    outputPtr->write(headLine.toStdString().c_str());
+    //outputPtr->write(headLine.toStdString().c_str());
 
+    long long counts = 0;
     while(!Q.empty()) {
         Pair p = Q.top(); Q.pop();
-
+        if(counts % 10000 == 0)
+        {
+            qDebug() << counts << "counted.";
+        }
+        counts++;
         StockRecord rec = p.first; int source = p.second;
         outputPtr->write(rec.getName().toStdString().c_str());
         outputPtr->write(",");
         outputPtr->write(rec.getDate().toQString().toStdString().c_str());
         outputPtr->write(",");
         outputPtr->write(rec.getPrice().toQString().toStdString().c_str());
-        outputPtr->write("\n");
+        outputPtr->write(",\n");
 
         QString buffer = files[source]->readLine(1000);
-        if(buffer == "") {continue; qDebug() << source << "ended.";}
+        if(mainFilePtr->atEnd() || buffer == "") { qDebug() << source << "ended.";continue;}
+
         if(records[source] == nullptr) records[source] = new StockRecord(buffer);
+
         else *(records[source]) = StockRecord(buffer);
         Q.push(Pair(*records[source], source));
 
-        //TODO: output p.first to output.txt, and read a new StockRecord from files[p.second] (if possible).
+
+
     }
 
     outputPtr->close();

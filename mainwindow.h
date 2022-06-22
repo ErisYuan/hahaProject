@@ -22,7 +22,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    StockRecord *records[1000002];
+    StockRecord *records[100002];
 
 private slots:
     int readData();
