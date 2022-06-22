@@ -28,7 +28,7 @@ int MainWindow::readData()
     qDebug() << estimate;
     //C:\Users\tiroxwater\Desktop\Project\stock_china.csv
     mainFilePtr->readLine(); //移除第一行的
-    for(iter = 0; ; iter++) {
+    for(iter = 0; false ; iter++) {
         bool finished = false;
         int i;
         for(i=0;i<100000;i++) {
@@ -65,7 +65,6 @@ int MainWindow::readData()
     mainFilePtr->close();
     delete mainFilePtr;
 
-    ui->progressBar->reset();
     typedef std::pair<StockRecord, int> Pair;
     std::priority_queue<Pair> Q;
     QFile *files[200] = {};
@@ -81,7 +80,6 @@ int MainWindow::readData()
 
     QFile *outputPtr = new QFile("..\\output.txt");
     outputPtr->open(QFile::OpenModeFlag::ReadWrite);
-    //outputPtr->write(headLine.toStdString().c_str());
 
     long long counts = 0;
     while(!Q.empty()) {
@@ -100,14 +98,12 @@ int MainWindow::readData()
         outputPtr->write(",\n");
 
         QString buffer = files[source]->readLine(1000);
-        if(mainFilePtr->atEnd() || buffer == "") { qDebug() << source << "ended.";continue;}
+        if(mainFilePtr->atEnd() || buffer == "") { qDebug() << source << "ended."; continue;}
 
         if(records[source] == nullptr) records[source] = new StockRecord(buffer);
 
         else *(records[source]) = StockRecord(buffer);
         Q.push(Pair(*records[source], source));
-
-
 
     }
 
